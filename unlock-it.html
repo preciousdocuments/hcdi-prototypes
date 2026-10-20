@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Unlock It – Every empty hour in NYC</title>
+<style>
+:root{--bg:#f7f5ef;--ink:#15171c;--card:#fff;--line:#e2dfd4;--y:#f2c230;--blue:#2150d8;--muted:#6a6a64;--empty:#e6e6e0;color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161a;--ink:#f1efe8;--card:#1d2026;--line:#2c3037;--muted:#a3a39b;--empty:#2b2e34}}
+*{box-sizing:border-box}body{margin:0;font-family:'Space Grotesk','Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--ink);padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+.nav{display:flex;gap:10px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{font-weight:700;display:flex;gap:6px;align-items:center}.logo::before{content:"";width:12px;height:12px;background:var(--y);border-radius:2px}
+.q{display:flex;flex:1;min-width:260px;border:1px solid var(--line);border-radius:10px;background:var(--card);overflow:hidden}
+.q div{padding:6px 12px;font-size:11px;color:var(--muted);border-right:1px solid var(--line);flex:1}.q b{display:block;color:var(--ink);font-size:13px}
+.q button{background:var(--blue);color:#fff;border:0;padding:0 18px;font:600 13px inherit;font-family:inherit}
+.chips{display:flex;gap:6px;padding:10px 18px;overflow-x:auto;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 13px;font:500 12px inherit;font-family:inherit;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible{outline:3px solid #3b82f6;outline-offset:2px}
+h1{font-size:clamp(26px,5vw,40px);line-height:1.05;margin:14px 18px 6px;letter-spacing:-.02em;max-width:14em}
+.lede{margin:0 18px 16px;color:var(--muted);font-size:13px;max-width:52ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;padding:0 18px 24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;text-align:left;padding:0;color:inherit;font-family:inherit;transition:transform .15s}
+.card:hover{transform:translateY(-2px)}
+.img{height:130px;position:relative;display:flex;align-items:flex-end;padding:8px}
+.badge{font-size:10px;background:#000a;color:#fff;border-radius:99px;padding:2px 8px;margin-right:4px}
+.info{padding:10px 12px 12px}.info h3{margin:0;font-size:14px;display:flex;justify-content:space-between}
+.info small{color:var(--muted);font-size:11px;display:block;margin-top:2px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:8px}
+.cal i{height:5px;border-radius:1px;background:var(--empty)}.cal i.o{background:var(--y)}
+.modal{position:fixed;inset:0;background:#000a;display:none;z-index:20;align-items:center;justify-content:center;padding:14px}
+.modal.show{display:flex}
+.panel{background:var(--card);border-radius:16px;width:min(460px,100%);max-height:100%;overflow:auto;padding:18px}
+.panel h2{margin:0 0 2px;font-size:20px}.panel .s{color:var(--muted);font-size:12px;margin-bottom:12px}
+.days{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}
+.line{display:flex;justify-content:space-between;font-size:13px;padding:5px 0}
+.tot{border-top:1px solid var(--line);margin-top:6px;padding-top:8px;font-weight:700}
+.share{background:var(--bg);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;margin:10px 0}
+.share b{font-size:20px}
+.step{display:inline-flex;align-items:center;gap:8px}.step button{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:15px;cursor:pointer}
+.btn{width:100%;padding:13px;border-radius:10px;border:0;background:var(--blue);color:#fff;font:700 14px inherit;font-family:inherit;cursor:pointer;margin-top:8px}
+.btn.o{background:none;border:1.5px solid var(--ink);color:var(--ink)}
+.fine{font-size:11px;color:var(--muted);margin:8px 0 0}
+.ok{text-align:center;padding:10px 0}.ok .code{font:700 28px ui-monospace,monospace;letter-spacing:.2em;background:var(--bg);padding:10px;border-radius:10px;margin:10px 0}
+.unpaid{font-size:12px;text-align:left;margin-top:8px}.unpaid div{display:flex;justify-content:space-between;padding:3px 0}.paid{color:#1f7a55}.due{color:#c8661a}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div class="nav"><div class="logo">Unlock It</div>
+ <div class="q"><div>Sport<b>Basketball</b></div><div>Where<b>Brooklyn</b></div><div>When<b>Tue after 6 PM</b></div><button>Search</button></div>
+ <button class="chip" style="color:var(--ink)">List your empty hours</button></div>
+<div class="chips" id="chips"></div>
+<h1>Empty hours in rooms the city already has.</h1>
+<p class="lede">School gyms, parish halls and building courts sit dark from 6 PM. Book one by the hour, insured, or hold the same hour every week.</p>
+<div class="grid" id="grid"></div>
+<div class="modal" id="modal"><div class="panel" id="panel"></div></div>
+<script>
+const spaces=[
+{id:1,n:"Grove Street Academy Gym",t:"School gym",a:"Carroll Gardens · 0.4 mi",fit:20,p:48,h:17,g:"linear-gradient(135deg,#c9a46a,#e8d3a8)",sp:"Maple floor · 2 full courts · 6 hoops · 24 ft ceiling",cal:[0,1,0,1,1,1,1,0,1,1,0,1,1,1,0,1,0,1,1,1,1]},
+{id:2,n:"Ridgewood Schoolyard Courts",t:"Building courts",a:"Ridgewood, Queens · 4.2 mi",fit:16,p:22,h:18,g:"linear-gradient(135deg,#d2693a,#2f6b4a)",sp:"Outdoor asphalt · 2 hoops · lights until 10 PM",cal:[0,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1,1,1,0,1,1]},
+{id:3,n:"St. Brigid Parish Hall",t:"Hall",a:"Bushwick · 1.8 mi",fit:24,p:35,h:9,g:"linear-gradient(135deg,#6f7fa8,#b8c1d9)",sp:"Wood floor · 2 hoops · 18 ft ceiling",cal:[0,0,1,0,1,0,1,0,0,1,0,0,1,1,0,0,1,0,1,0,1]},
+{id:4,n:"The Dime Rooftop Court",t:"Rooftop",a:"Williamsburg · 2.6 mi",fit:12,p:92,h:6,g:"linear-gradient(135deg,#3f5f8a,#e9a45c)",sp:"Sport tile · 1 half court · skyline view",cal:[0,0,0,1,0,0,1,0,0,1,0,0,1,1,0,0,0,1,0,0,1]}];
+const cats=["All spaces","School gym","Hall","Building courts","Rooftop","Standing slot open","Under $50 / hr"];
+let cat="All spaces",cur=null,day=0,n=10,weekly=false;
+const $=id=>document.getElementById(id);
+const days=["Tue 7 PM","Tue 8 PM","Thu 7 PM","Sat 10 AM","Sat 11 AM"];
+const fee=p=>+(p*0.12).toFixed(2),ins=4;
+function list(){return spaces.filter(s=>cat=="All spaces"||s.t==cat||(cat=="Standing slot open"&&s.h>8)||(cat=="Under $50 / hr"&&s.p<50))}
+function render(){
+ $("chips").innerHTML=cats.map(c=>`<button class="chip" aria-pressed="${c==cat}" data-c="${c}">${c}</button>`).join("");
+ const l=list();
+ $("grid").innerHTML=l.length?l.map(s=>`<button class="card" data-s="${s.id}"><div class="img" style="background:${s.g}"><span class="badge">${s.t}</span><span class="badge">Insured</span></div>
+ <div class="info"><h3><span>${s.n}</span><span>$${s.p}/hr</span></h3><small>${s.a} · fits ${s.fit}</small><small>${s.h} open hours this week · $${(s.p/10).toFixed(2)} each with 10 players</small>
+ <div class="cal">${s.cal.map(v=>`<i class="${v?"o":""}"></i>`).join("")}</div></div></button>`).join(""):`<p style="grid-column:1/-1;color:var(--muted)">No spaces match. Clear a filter to see all empty hours.</p>`;
+}
+function panel(){
+ const s=cur,f=fee(s.p),tot=s.p+ins+f,mine=tot/n;
+ $("panel").innerHTML=`<h2>${s.n}</h2><div class="s">${s.a} · ${s.sp}</div>
+ <b style="font-size:12px">Open hours</b><div class="days">${days.map((d,i)=>`<button class="chip" aria-pressed="${i==day}" data-d="${i}">${d}</button>`).join("")}</div>
+ <div class="line"><span>One hour</span><span>$${s.p.toFixed(2)}</span></div><div class="line"><span>Insurance for the hour ($2M cover)</span><span>$${ins.toFixed(2)}</span></div><div class="line"><span>Service fee</span><span>$${f.toFixed(2)}</span></div>
+ <div class="line tot"><span>Total</span><span>$${tot.toFixed(2)}</span></div>
+ <div class="share"><span>Splitting with<br><span class="step"><button data-n="-1" aria-label="Fewer players">−</button><b style="font-size:16px">${n}</b><button data-n="1" aria-label="More players">+</button></span></span><span style="text-align:right;font-size:11px;color:var(--muted)">Your share<br><b style="color:var(--ink)">$${mine.toFixed(2)}</b></span></div>
+ <button class="btn" data-a="book">Book ${days[day]}</button><button class="btn o" data-a="hold">Hold this hour every week</button>
+ <p class="fine">Free to cancel up to 24 hours before. Your group pays via one link. Minimum 6 players, or the hour refunds 48 hours out.</p>
+ <button class="chip" style="margin-top:8px;color:var(--ink)" data-a="close">Close</button>`;
+}
+const paid=["Priya","Sam","Dev","Alex","Jo"];
+function done(wk){
+ $("panel").innerHTML=`<div class="ok"><h2>${wk?"Standing slot held":"Hour booked"}</h2><div class="s">${cur.n} · ${days[day]}${wk?" · every week":""}</div>
+ <div>Door code</div><div class="code">${(4000+cur.id*731+day*97)%10000}</div>
+ <p class="fine">Insurance certificate issued in the host’s name. Share the pay link with your group:</p>
+ <div class="unpaid">${Array.from({length:n},(_,i)=>{const p=i<paid.length?paid[i]:"Player "+(i+1);const ok=i<Math.ceil(n*0.5);return `<div><span>${p}</span><span class="${ok?"paid":"due"}">${ok?"Paid":"Not paid yet"}</span></div>`}).join("")}</div>
+ <button class="btn" data-a="close">Done</button></div>`;
+}
+document.addEventListener("click",e=>{
+ const b=e.target.closest("[data-c],[data-s],[data-d],[data-n],[data-a]");
+ if(!b){if(e.target==$("modal"))$("modal").classList.remove("show");return}
+ if(b.dataset.c){cat=b.dataset.c;render()}
+ else if(b.dataset.s){cur=spaces.find(x=>x.id==b.dataset.s);day=0;$("modal").classList.add("show");panel()}
+ else if(b.dataset.d){day=+b.dataset.d;panel()}
+ else if(b.dataset.n){n=Math.max(2,Math.min(cur.fit,n+ +b.dataset.n));panel()}
+ else if(b.dataset.a=="book")done(false);
+ else if(b.dataset.a=="hold")done(true);
+ else if(b.dataset.a=="close")$("modal").classList.remove("show");
+});
+render();
+</script></body></html>

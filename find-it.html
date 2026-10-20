@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Find It – One map for every NYC court</title>
+<style>
+:root{--ink:#1c2a4a;--bg:#e9ece6;--card:#fff;--line:#d9ddd5;--g:#1f7a55;--o:#c8661a;--gr:#8a8f8a;--muted:#667;--water:#bcd3dc;--land:#eef0ea;--chip:#fff;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#e8ecf7;--bg:#12161d;--card:#1b212b;--line:#2c3441;--muted:#9aa4b5;--water:#24394a;--land:#222a25;--chip:#1b212b}}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);display:flex;justify-content:center;align-items:center;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+.phone{width:min(390px,100%);height:min(780px,100%);background:var(--land);position:relative;overflow:hidden;border-radius:28px;border:6px solid #14171c;box-shadow:0 10px 40px #0004}
+@media(max-width:430px){.phone{border-radius:0;border:0}}
+.map{position:absolute;inset:0;background:
+ linear-gradient(100deg,transparent 36%,var(--water) 36%,var(--water) 47%,transparent 47%),
+ linear-gradient(80deg,transparent 56%,var(--water) 56%,var(--water) 62%,transparent 62%),
+ var(--land)}
+.map i{position:absolute;background:#fff8;height:3px;width:140%;left:-20%}
+.top{position:absolute;top:12px;left:12px;right:12px;z-index:3}
+.search{background:var(--card);border-radius:16px;padding:10px 14px;box-shadow:0 2px 10px #0002;font-size:13px}
+.search small{display:block;color:var(--muted);font-size:11px}
+.row{display:flex;gap:6px;overflow-x:auto;margin-top:8px;scrollbar-width:none}
+.row::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:99px;padding:6px 12px;font:600 12px inherit;font-family:inherit;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip:focus-visible,.pin:focus-visible,.slot:focus-visible,.btn:focus-visible{outline:3px solid #3b82f6;outline-offset:2px}
+.pin{position:absolute;transform:translate(-50%,-50%);background:var(--card);color:var(--ink);border:0;border-radius:99px;padding:5px 10px;font:700 12px inherit;font-family:inherit;box-shadow:0 2px 6px #0003;cursor:pointer;display:flex;gap:5px;align-items:center;white-space:nowrap;transition:transform .15s,opacity .2s}
+.pin::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c)}
+.pin.sel{background:var(--ink);color:var(--bg);transform:translate(-50%,-50%) scale(1.15);z-index:2}
+.pin.dim{opacity:.18;pointer-events:none}
+.legend{position:absolute;left:12px;bottom:190px;background:var(--card);border-radius:10px;padding:7px 9px;font-size:10px;line-height:1.5;box-shadow:0 2px 6px #0002;z-index:2}
+.legend b{display:block;margin-bottom:2px}.legend span::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:var(--c)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:22px 22px 0 0;padding:14px 16px 18px;box-shadow:0 -4px 18px #0003;z-index:4;transition:transform .25s}
+.sheet h2{margin:0;font-size:15px;display:flex;justify-content:space-between}
+.sub{font-size:11px;color:var(--muted);margin:2px 0 8px;display:flex;justify-content:space-between}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;background:#dff3e8;color:#14573b}
+.tag.b{background:#e0e9ff;color:#2a448f}.tag.p{background:#fdebc9;color:#7a4a05}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.slot{padding:9px 0;border-radius:8px;border:1.5px solid var(--g);background:none;color:var(--g);font:700 13px inherit;font-family:inherit;cursor:pointer}
+.slot[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.slot:disabled{border-color:var(--line);color:var(--muted);text-decoration:line-through;cursor:not-allowed}
+.pay{font-size:11px;color:var(--muted);margin:9px 0;display:flex;justify-content:space-between;align-items:center}
+.pay label{display:flex;gap:5px;align-items:center;cursor:pointer}
+.acts{display:grid;grid-template-columns:1.5fr 1fr;gap:8px}
+.btn{padding:12px;border-radius:12px;border:1.5px solid var(--ink);font:700 14px inherit;font-family:inherit;cursor:pointer;background:var(--ink);color:var(--bg)}
+.btn.o{background:none;color:var(--ink)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.on{background:#dff3e8;color:#14573b;border-color:#1f7a55}
+.done{position:absolute;inset:0;background:var(--card);z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;gap:8px}
+.done.show{display:flex;animation:pop .3s}
+@keyframes pop{from{transform:scale(.96);opacity:0}}
+.check{width:64px;height:64px;border-radius:50%;background:var(--g);color:#fff;display:grid;place-items:center;font-size:32px}
+.done p{margin:0;color:var(--muted);font-size:13px}
+.toast{position:absolute;top:96px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:12px;padding:8px 14px;border-radius:99px;z-index:9;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style></head><body>
+<div class="phone" id="app">
+ <div class="map" aria-hidden="true"><i style="top:30%;transform:rotate(-14deg)"></i><i style="top:52%;transform:rotate(10deg)"></i><i style="top:70%;transform:rotate(-8deg)"></i></div>
+ <div class="top">
+  <div class="search"><b>Near Chelsea, Manhattan</b><small>Tonight · 6–9 PM · Any level</small></div>
+  <div class="row" id="sports"></div>
+  <div class="row" id="filters"></div>
+ </div>
+ <div id="pins"></div>
+ <div class="legend"><b>Slots left</b><span style="--c:var(--g)">3 or more</span><br><span style="--c:var(--o)">1–2</span><br><span style="--c:var(--gr)">Full · alert</span></div>
+ <div class="toast" id="toast"></div>
+ <div class="sheet" id="sheet"></div>
+ <div class="done" id="done"></div>
+</div>
+<script>
+const courts=[
+{id:1,n:"Central Park Tennis Center",s:"Tennis",x:50,y:40,p:15,t:["6 PM","7 PM","8 PM","9 PM"],free:[0,1,1,1],a:"NYC Parks",d:"0.9 mi",permit:true,indoor:false,beg:false,open:true},
+{id:2,n:"Pier 40 Pickleball",s:"Pickleball",x:68,y:27,p:15,t:["6 PM","7 PM","8 PM","9 PM"],free:[1,1,1,1],a:"Private",d:"1.4 mi",permit:false,indoor:false,beg:true,open:true},
+{id:3,n:"Chelsea Piers Courts",s:"Tennis",x:42,y:56,p:120,t:["6 PM","7 PM","8 PM","9 PM"],free:[0,0,1,1],a:"Private club",d:"0.5 mi",permit:false,indoor:true,beg:false,open:true,member:true},
+{id:4,n:"West 4th Street Courts",s:"Basketball",x:71,y:44,p:0,t:["6 PM","7 PM","8 PM","9 PM"],free:[1,1,1,0],a:"NYC Parks",d:"1.1 mi",permit:false,indoor:false,beg:true,open:true},
+{id:5,n:"Hudson Yards Futsal",s:"Soccer",x:30,y:66,p:60,t:["6 PM","7 PM","8 PM","9 PM"],free:[0,0,0,1],a:"Private",d:"0.8 mi",permit:false,indoor:true,beg:true,open:true},
+{id:6,n:"Bryant Park Courts",s:"Pickleball",x:78,y:62,p:55,t:["6 PM","7 PM","8 PM","9 PM"],free:[1,1,1,0],a:"Private",d:"1.6 mi",permit:false,indoor:false,beg:true,open:true},
+{id:7,n:"Riverside Clay Courts",s:"Tennis",x:34,y:36,p:0,t:["6 PM","7 PM","8 PM","9 PM"],free:[0,0,0,0],a:"NYC Parks",d:"2.2 mi",permit:true,indoor:false,beg:false,open:false},
+{id:8,n:"LIC Indoor Courts",s:"Basketball",x:84,y:78,p:180,t:["6 PM","7 PM","8 PM","9 PM"],free:[0,0,1,1],a:"Private",d:"3.0 mi",permit:false,indoor:true,beg:false,open:true},
+{id:9,n:"Hunters Point Fields",s:"Soccer",x:60,y:82,p:0,t:["6 PM","7 PM","8 PM","9 PM"],free:[1,1,1,1],a:"NYC Parks",d:"3.4 mi",permit:true,indoor:false,beg:true,open:true}];
+const sports=["All sports","Tennis","Pickleball","Basketball","Soccer"];
+const fl=[["open","Open now"],["u75","Under $75"],["free","Free"],["nop","No permit"],["beg","Beginner-friendly"],["in","Indoor"]];
+let sport="All sports",on=new Set(),sel=null,slot=null,alerts=new Set(),weekly=false;
+const $=id=>document.getElementById(id);
+const left=c=>c.free.filter(Boolean).length;
+const color=c=>left(c)==0?"var(--gr)":left(c)<=2?"var(--o)":"var(--g)";
+const price=c=>c.p?"$"+c.p:"Free";
+function ok(c){return (sport=="All sports"||c.s==sport)&&(!on.has("open")||c.open)&&(!on.has("u75")||c.p<75)&&(!on.has("free")||c.p==0)&&(!on.has("nop")||!c.permit)&&(!on.has("beg")||c.beg)&&(!on.has("in")||c.indoor)}
+function chips(){
+ $("sports").innerHTML=sports.map(s=>`<button class="chip" aria-pressed="${s==sport}" data-s="${s}">${s}</button>`).join("");
+ $("filters").innerHTML=fl.map(f=>`<button class="chip" aria-pressed="${on.has(f[0])}" data-f="${f[0]}">${f[1]}</button>`).join("");
+}
+function pins(){
+ $("pins").innerHTML=courts.map(c=>{const l=left(c);const lab=c.permit&&l?`Permit · ${l}`:l?`${price(c)} · ${l}`:"Full";
+ return `<button class="pin ${sel==c.id?"sel":""} ${ok(c)?"":"dim"}" style="left:${c.x}%;top:${c.y}%;--c:${color(c)}" data-id="${c.id}" aria-label="${c.n}, ${lab}">${lab}</button>`}).join("");
+}
+function sheet(){
+ const c=courts.find(x=>x.id==sel);
+ if(!c){$("sheet").innerHTML=`<h2>Tap a pin to see times</h2><div class="sub"><span>${courts.filter(ok).length} courts match your filters</span></div><p style="font-size:12px;color:var(--muted);margin:0">Green pins have 3 or more slots, orange 1–2, grey is full. “Permit” means a permit is needed (see badge).</p>`;return}
+ const l=left(c);
+ $("sheet").innerHTML=`<h2><span>${c.n}</span><span>${price(c)}<small style="font-size:10px;color:var(--muted);font-weight:500"> / court-hr</small></span></h2>
+ <div class="sub"><span>${c.a} · ${c.s} · ${c.indoor?"Indoor":"Outdoor"} · ${c.d}</span></div>
+ <div class="tags"><span class="tag">${l} slot${l==1?"":"s"} left</span>${c.p||!c.permit?'<span class="tag b">Instant confirm</span>':''}${c.permit?'<span class="tag p">Permit on file – <u data-act="permit" style="cursor:pointer">add yours</u></span>':''}${c.member?'<span class="tag p">Day pass for non-members</span>':''}${c.beg?'<span class="tag">Beginner-friendly</span>':''}${c.s=="Pickleball"?'<span class="tag b">Paddle rental $5</span>':''}</div>
+ <div class="slots">${c.t.map((t,i)=>`<button class="slot" ${c.free[i]?"":"disabled"} aria-pressed="${slot==i}" data-i="${i}">${t}</button>`).join("")}</div>
+ <div class="pay"><span>Pay with Visa •• 4417 · free cancel until 3 PM</span><label><input type="checkbox" id="wk" ${weekly?"checked":""}> Repeat weekly</label></div>
+ <div class="acts"><button class="btn" data-act="book" ${slot==null?"disabled":""}>${slot==null?"Pick a time":"Book & pay "+price(c)}</button>
+ <button class="btn o ${alerts.has(c.id)?"on":""}" data-act="alert">${alerts.has(c.id)?"✓ Alert on":"Alert me"}</button></div>`;
+}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1800)}
+$("app").addEventListener("click",e=>{
+ const b=e.target.closest("[data-s],[data-f],[data-id],[data-i],[data-act],#again");if(!b)return;
+ if(b.dataset.s){sport=b.dataset.s;sel=null;slot=null}
+ else if(b.dataset.f){on.has(b.dataset.f)?on.delete(b.dataset.f):on.add(b.dataset.f);sel=null;slot=null}
+ else if(b.dataset.id){sel=+b.dataset.id;slot=null}
+ else if(b.dataset.i){slot=+b.dataset.i}
+ else if(b.dataset.act=="alert"){const id=sel;alerts.has(id)?alerts.delete(id):alerts.add(id);toast(alerts.has(id)?"We’ll ping you when a slot opens":"Alert removed")}
+ else if(b.dataset.act=="permit"){toast("Permit signup opens in-app (next build)")}
+ else if(b.dataset.act=="book"){const c=courts.find(x=>x.id==sel);c.free[slot]=0;
+  $("done").innerHTML=`<div class="check">✓</div><h2 style="margin:6px 0 0">You’re booked</h2><p><b>${c.n}</b><br>Tomorrow · ${c.t[slot]} · ${price(c)}</p><p>${weekly?"Repeats every week. Cancel anytime.":"Instant confirmation sent. Free cancel until 3 PM."}</p><button class="btn" id="again" style="margin-top:14px;padding:12px 28px">Back to map</button>`;
+  $("done").classList.add("show");slot=null}
+ else if(b.id=="again"){$("done").classList.remove("show")}
+ chips();pins();sheet();
+});
+$("app").addEventListener("change",e=>{if(e.target.id=="wk")weekly=e.target.checked});
+chips();pins();sheet();
+</script></body></html>
